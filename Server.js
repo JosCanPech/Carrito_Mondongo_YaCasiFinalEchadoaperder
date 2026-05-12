@@ -8,7 +8,13 @@ import './configuracion/oaut.js';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import fileUpload from 'express-fileupload';
 import { uploadFile, getFiles, getFile, downloadFile, getFileURL } from './public/s3.js';
-import {DATABASE} from './public/config.js';
+import {DATABASE, PORT} from './public/config.js';
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // LOG DE DEPURACIÓN 
 console.log("Tipo de MercadoPagoConfig:", typeof MercadoPagoConfig); 
@@ -25,7 +31,7 @@ try {
 }
 
 const app = express();
-const port = 3000;
+const port = PORT;
 
 
 // --- CONEXIÓN A MONGODB ---
@@ -100,6 +106,7 @@ const Compra = mongoose.model('compras', compraSchema);
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+//app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
     secret: 'secreto_funko_hunter',
@@ -112,6 +119,12 @@ app.use(fileUpload({
     useTempFiles: true,
     tempFileDir: './uploads'
 }));
+
+
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'Index.html'));
+}); 
 
 
 // 1. Ruta para iniciar el inicio de sesión con Google
@@ -919,4 +932,9 @@ app.get('/files/:fileName', async (req, res) =>{
 app.use(express.static('images'));
 
 
-app.listen(port, () => console.log(`Servidor en http://localhost:${port}`));
+app.listen(port, async () => {
+  console.log("Esperando peticiones", port); 
+});
+
+
+//app.listen(port, () => console.log(`Servidor en http://localhost:${port}`));
